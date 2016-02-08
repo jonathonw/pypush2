@@ -1,6 +1,6 @@
-from flufl.enum import Enum
+from flufl.enum import IntEnum
 
-class Buttons(Enum):
+class Buttons(IntEnum):
   # Left side
   tap_tempo = 3
   metronome = 9
@@ -52,14 +52,14 @@ class Buttons(Enum):
 
   master = 28
 
-  1_32t = 43
-  1_32 = 42
-  1_16t = 41
-  1_16 = 40
-  1_8t = 39
-  1_8 = 38
-  1_4t = 37
-  1_4 = 36
+  length_1_32t = 43
+  length_1_32 = 42
+  length_1_16t = 41
+  length_1_16 = 40
+  length_1_8t = 39
+  length_1_8 = 38
+  length_1_4t = 37
+  length_1_4 = 36
 
   # Right-side control buttons
   setup = 30

@@ -75,41 +75,64 @@ class DisplayThread(pypush2.DisplayView):
 def printMessage(message):
   print message
 
+def setupLeds(output, allLedsOn, colorGridPage):
+  if allLedsOn:
+    dimLevel = 3
+    for i in range(0,128):
+      output.send(mido.Message('control_change', channel=0, control=i, value=dimLevel))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.play, value=127))
+  else:
+    dimLevel = 0
+    for i in range(0,128):
+      output.send(mido.Message('control_change', channel=0, control=i, value=dimLevel))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.play, value=126))
+
+  if colorGridPage == 0:
+    for i in range(36,100):
+      output.send(mido.Message('note_on', channel=0, note=i, velocity=i-36))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.page_left, value=dimLevel))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.page_right, value=127))
+  else:
+    for i in range(36,100):
+      output.send(mido.Message('note_on', channel=0, note=i, velocity=i-36+64))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.page_left, value=127))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.page_right, value=dimLevel))
+
+
 def main():
   displayThread = DisplayThread()
   displayThread.start()
 
+  ledState = {
+    "ledPage": 0,
+    "allLedsOn": False
+  }
+
   def setString(message):
-    #print message
+    # Display handling
     if(message.type == 'note_on'):
       displayThread.setStringToDisplay(u"{}/{} (Note: {})".format(message.note - 36, message.note - 36 + 64, message.note))
+    elif(message.type == 'control_change'):
+      displayThread.setStringToDisplay(u"{}".format(message.control))
+      print "Control:", message.control
     else:
-      if message.type == 'control_change' and message.control == PAGE_LEFT_BUTTON and message.value == 127:
-        output.send(mido.Message('control_change', channel=0, control=PAGE_LEFT_BUTTON, value=0))
-        output.send(mido.Message('control_change', channel=0, control=PAGE_RIGHT_BUTTON, value=127))
+      print message
 
-        for i in range(36,100):
-          output.send(mido.Message('note_on', channel=0, note=i, velocity=i-36))
-      elif message.type == 'control_change' and message.control == PAGE_RIGHT_BUTTON and message.value == 127:
-        output.send(mido.Message('control_change', channel=0, control=PAGE_LEFT_BUTTON, value=127))
-        output.send(mido.Message('control_change', channel=0, control=PAGE_RIGHT_BUTTON, value=0))
-
-        for i in range(36,100):
-          output.send(mido.Message('note_on', channel=0, note=i, velocity=i-36+64))
-      else:
-        print message
+    # Button event handling
+    if message.type == 'control_change' and message.control == pypush2.Buttons.page_left and message.value == 127:
+      ledState["ledPage"] = 0
+      setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
+    elif message.type == 'control_change' and message.control == pypush2.Buttons.page_right and message.value == 127:
+      ledState["ledPage"] = 1
+      setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
+    elif message.type == 'control_change' and message.control == pypush2.Buttons.play and message.value == 127:
+      ledState["allLedsOn"] = not ledState["allLedsOn"]
+      setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
 
   try:
     with mido.open_output('Ableton Push 2 Live Port') as output, \
          mido.open_input('Ableton Push 2 Live Port') as input:
-      #while True:
-      for i in range(0,128):
-        output.send(mido.Message('control_change', channel=0, control=i, value=0))
-
-      output.send(mido.Message('control_change', channel=0, control=PAGE_RIGHT_BUTTON, value=127))
-
-      for i in range(36,100):
-        output.send(mido.Message('note_on', channel=0, note=i, velocity=i-36))
+      setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
 
       input.callback = setString
       while True:
