@@ -1,4 +1,5 @@
 import flufl.enum
+import sets
 
 class DisplayButtonGroups(flufl.enum.IntEnum):
   not_display_button = -1
@@ -38,7 +39,6 @@ def get_display_button_index(button):
     return button - Buttons.top_display_0
   else:
     raise IndexError("Button {} is not a display button".format(button))
-
 
 class Buttons(flufl.enum.IntEnum):
   # Left side
@@ -130,3 +130,39 @@ class Buttons(flufl.enum.IntEnum):
 
   shift = 49
   select = 48
+
+colored_buttons = sets.ImmutableSet([
+  Buttons.mute,
+  Buttons.solo,
+  Buttons.automate,
+  Buttons.record,
+  Buttons.play,
+  Buttons.top_display_0,
+  Buttons.top_display_1,
+  Buttons.top_display_2,
+  Buttons.top_display_3,
+  Buttons.top_display_4,
+  Buttons.top_display_5,
+  Buttons.top_display_6,
+  Buttons.top_display_7,
+  Buttons.bottom_display_0,
+  Buttons.bottom_display_1,
+  Buttons.bottom_display_2,
+  Buttons.bottom_display_3,
+  Buttons.bottom_display_4,
+  Buttons.bottom_display_5,
+  Buttons.bottom_display_6,
+  Buttons.bottom_display_7,
+  Buttons.length_1_32t,
+  Buttons.length_1_32,
+  Buttons.length_1_16t,
+  Buttons.length_1_16,
+  Buttons.length_1_8t,
+  Buttons.length_1_8,
+  Buttons.length_1_4t,
+  Buttons.length_1_4
+])
+'''
+Set of buttons backed by RGB LEDs and capable of
+displaying color.
+'''
