@@ -6,11 +6,16 @@ import array
 import cairocffi
 import rgbtools
 
+class DisplayParameters:
+  DISPLAY_WIDTH = 960
+  DISPLAY_HEIGHT = 160
 
+  BUFFER_WIDTH = 1024
+  BUFFER_HEIGHT = 160
 
-class DisplayView(threading.Thread):
+class DisplayRenderer(threading.Thread):
   '''
-  DisplayView is an abstract superclass implementing logic to
+  DisplayRenderer is an abstract superclass implementing logic to
   push frames (rendered with Cairo) to the Push 2's display.  To use,
   override the paint(context) method, instantiate an instance, and call
   start().
@@ -26,14 +31,6 @@ class DisplayView(threading.Thread):
   _PUSH_VID = 0x2982
   _PUSH_PID = 0x1967
 
-  class DisplayParameters:
-    DISPLAY_WIDTH = 960
-    DISPLAY_HEIGHT = 160
-
-    BUFFER_WIDTH = 1024
-    BUFFER_HEIGHT = 160
-
-
   def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
     threading.Thread.__init__(self, group=group, target=target, name=name, args=args, kwargs=kwargs)
     self.cancelled = threading.Event()
@@ -48,14 +45,14 @@ class DisplayView(threading.Thread):
     return self.cancelled.is_set()
 
   def run(self):
-    dev = usb.core.find(idVendor=DisplayView._PUSH_VID, idProduct=DisplayView._PUSH_PID)
+    dev = usb.core.find(idVendor=DisplayRenderer._PUSH_VID, idProduct=DisplayRenderer._PUSH_PID)
 
     if dev is None:
       raise ValueError("Device not found")
 
     dev.set_configuration()
 
-    surface = cairocffi.ImageSurface(cairocffi.FORMAT_RGB16_565, DisplayView.DisplayParameters.BUFFER_WIDTH, DisplayView.DisplayParameters.BUFFER_HEIGHT)
+    surface = cairocffi.ImageSurface(cairocffi.FORMAT_RGB16_565, DisplayParameters.BUFFER_WIDTH, DisplayParameters.BUFFER_HEIGHT)
     context = cairocffi.Context(surface)
     while not self.is_cancelled():
       start = time.clock()
@@ -70,12 +67,12 @@ class DisplayView(threading.Thread):
 
       end = time.clock()
 
-      dev.write(1, DisplayView._MAGIC_HEADER)
+      dev.write(1, DisplayRenderer._MAGIC_HEADER)
       dev.write(1, convertedBgr)
 
       frameTime = end - start
 
-      if(frameTime < 60.0):
+      if(frameTime < (1.0 / 60.0)):
         time.sleep((1.0 / 60.0) - frameTime)
       else:
         time.sleep(1.0 / 60.0)

@@ -20,16 +20,17 @@ import threading
 import time
 
 import mido
-import pypush2
+import pypush2.display
+import pypush2.buttons
 
 from math import pi
 
 PAGE_LEFT_BUTTON=62
 PAGE_RIGHT_BUTTON=63
 
-class DisplayThread(pypush2.DisplayView):
+class DisplayThread(pypush2.display.DisplayRenderer):
   def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
-    pypush2.DisplayView.__init__(self, group=group, target=target, name=name, args=args, kwargs=kwargs)
+    pypush2.display.DisplayRenderer.__init__(self, group=group, target=target, name=name, args=args, kwargs=kwargs)
     self.stringToDisplay = u"Touch a pad to see the color value it\u2019s showing"
     self.stringToDisplayLock = threading.Lock()
     self.animationFrameNumber = 0
@@ -51,14 +52,14 @@ class DisplayThread(pypush2.DisplayView):
 
     with context:
       context.set_source_rgb(0.1, 0.1, 0.1)
-      context.arc(pypush2.DisplayView.DisplayParameters.DISPLAY_WIDTH - 20, pypush2.DisplayView.DisplayParameters.DISPLAY_HEIGHT - 20, 10, 0, 2 * pi)
+      context.arc(pypush2.display.DisplayParameters.DISPLAY_WIDTH - 20, pypush2.display.DisplayParameters.DISPLAY_HEIGHT - 20, 10, 0, 2 * pi)
       context.stroke()
       
       context.set_source_rgb(1, 0.1, 0.1)
       if self.iteration == 0:
-        context.arc(pypush2.DisplayView.DisplayParameters.DISPLAY_WIDTH - 20, pypush2.DisplayView.DisplayParameters.DISPLAY_HEIGHT - 20, 10, 0, (float(self.animationFrameNumber) / 30) * 2 * pi)
+        context.arc(pypush2.display.DisplayParameters.DISPLAY_WIDTH - 20, pypush2.display.DisplayParameters.DISPLAY_HEIGHT - 20, 10, 0, (float(self.animationFrameNumber) / 30) * 2 * pi)
       else:
-        context.arc(pypush2.DisplayView.DisplayParameters.DISPLAY_WIDTH - 20, pypush2.DisplayView.DisplayParameters.DISPLAY_HEIGHT - 20, 10, (float(self.animationFrameNumber) / 30) * 2 * pi, 2 * pi)
+        context.arc(pypush2.display.DisplayParameters.DISPLAY_WIDTH - 20, pypush2.display.DisplayParameters.DISPLAY_HEIGHT - 20, 10, (float(self.animationFrameNumber) / 30) * 2 * pi, 2 * pi)
       context.stroke()
       self.animationFrameNumber = (self.animationFrameNumber + 1) % 30
       if self.animationFrameNumber == 0:
@@ -80,23 +81,23 @@ def setupLeds(output, allLedsOn, colorGridPage):
     dimLevel = 3
     for i in range(0,128):
       output.send(mido.Message('control_change', channel=0, control=i, value=dimLevel))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.play, value=127))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=127))
   else:
     dimLevel = 0
     for i in range(0,128):
       output.send(mido.Message('control_change', channel=0, control=i, value=dimLevel))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.play, value=126))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=126))
 
   if colorGridPage == 0:
     for i in range(36,100):
       output.send(mido.Message('note_on', channel=0, note=i, velocity=i-36))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.page_left, value=dimLevel))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.page_right, value=127))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_left, value=dimLevel))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_right, value=127))
   else:
     for i in range(36,100):
       output.send(mido.Message('note_on', channel=0, note=i, velocity=i-36+64))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.page_left, value=127))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.Buttons.page_right, value=dimLevel))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_left, value=127))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_right, value=dimLevel))
 
 
 def main():
@@ -119,13 +120,13 @@ def main():
       print message
 
     # Button event handling
-    if message.type == 'control_change' and message.control == pypush2.Buttons.page_left and message.value == 127:
+    if message.type == 'control_change' and message.control == pypush2.buttons.Buttons.page_left and message.value == 127:
       ledState["ledPage"] = 0
       setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
-    elif message.type == 'control_change' and message.control == pypush2.Buttons.page_right and message.value == 127:
+    elif message.type == 'control_change' and message.control == pypush2.buttons.Buttons.page_right and message.value == 127:
       ledState["ledPage"] = 1
       setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
-    elif message.type == 'control_change' and message.control == pypush2.Buttons.play and message.value == 127:
+    elif message.type == 'control_change' and message.control == pypush2.buttons.Buttons.play and message.value == 127:
       ledState["allLedsOn"] = not ledState["allLedsOn"]
       setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
 
