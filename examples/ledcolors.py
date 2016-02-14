@@ -69,7 +69,7 @@ class DisplayThread(pypush2.display.DisplayRenderer):
     with context:
       context.set_source_rgb(1, 1, 1)
       context.move_to(20, 90)
-      context.select_font_face(family="Segoe UI")
+      context.select_font_face(family="Avenir")
       context.set_font_size(32)
       context.text_path(self.getStringToDisplay())
       context.fill()
