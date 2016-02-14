@@ -84,12 +84,12 @@ def setupLeds(output, allLedsOn, colorGridPage):
         output.send(mido.Message('control_change', channel=0, control=i, value=94))
       else:
         output.send(mido.Message('control_change', channel=0, control=i, value=dimLevel))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=127))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=95))
   else:
     dimLevel = 0
     for i in range(0,128):
       output.send(mido.Message('control_change', channel=0, control=i, value=dimLevel))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=126))
+    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=94))
 
   if colorGridPage == 0:
     for i in range(36,100):
@@ -117,7 +117,7 @@ def main():
     if(message.type == 'note_on'):
       displayThread.setStringToDisplay(u"{}/{} (Note: {})".format(message.note - 36, message.note - 36 + 64, message.note))
     elif(message.type == 'control_change'):
-      if(message.control in pypush2.buttons.Buttons):
+      if pypush2.buttons.is_button(message.control):
         button = pypush2.buttons.Buttons[message.control]
         displayThread.setStringToDisplay(u"CC: {} ({})".format(message.control, button.name))
       else:

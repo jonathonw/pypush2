@@ -6,6 +6,9 @@ class DisplayButtonGroups(flufl.enum.IntEnum):
   bottom = 0
   top = 1
 
+def is_button(button):
+  return button in Buttons
+
 def is_display_button(button):
   """
   Returns true if the passedbutton is one of the buttons immediately
