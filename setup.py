@@ -11,7 +11,8 @@ setup(
       'pyusb>=1.0.0b2',
       'cairocffi>=0.7.2',
       'cython>=0.23.2',
-      'flufl.enum>=4.1'
+      'flufl.enum>=4.1',
+      'axel>=0.0.4'
     ],
     entry_points = {
         'console_scripts': [

@@ -20,6 +20,7 @@ import threading
 import time
 
 import mido
+import pypush2.device
 import pypush2.display
 import pypush2.buttons
 
@@ -76,31 +77,31 @@ class DisplayThread(pypush2.display.DisplayRenderer):
 def printMessage(message):
   print message
 
-def setupLeds(output, allLedsOn, colorGridPage):
+def setupLeds(pushDevice, allLedsOn, colorGridPage):
   if allLedsOn:
     dimLevel = 3
     for i in range(0,128):
       if i in pypush2.buttons.colored_buttons:
-        output.send(mido.Message('control_change', channel=0, control=i, value=94))
+        pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=i, value=94))
       else:
-        output.send(mido.Message('control_change', channel=0, control=i, value=dimLevel))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=95))
+        pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=i, value=dimLevel))
+    pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=95))
   else:
     dimLevel = 0
     for i in range(0,128):
-      output.send(mido.Message('control_change', channel=0, control=i, value=dimLevel))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=94))
+      pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=i, value=dimLevel))
+    pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=94))
 
   if colorGridPage == 0:
     for i in range(36,100):
-      output.send(mido.Message('note_on', channel=0, note=i, velocity=i-36))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_left, value=dimLevel))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_right, value=127))
+      pushDevice.send_midi_message(mido.Message('note_on', channel=0, note=i, velocity=i-36))
+    pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_left, value=dimLevel))
+    pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_right, value=127))
   else:
     for i in range(36,100):
-      output.send(mido.Message('note_on', channel=0, note=i, velocity=i-36+64))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_left, value=127))
-    output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_right, value=dimLevel))
+      pushDevice.send_midi_message(mido.Message('note_on', channel=0, note=i, velocity=i-36+64))
+    pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_left, value=127))
+    pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.page_right, value=dimLevel))
 
 
 def main():
@@ -112,43 +113,40 @@ def main():
     "allLedsOn": False
   }
 
-  def setString(message):
+  def buttonPressed(sender, button):
+    displayThread.setStringToDisplay(u"CC: {} ({})".format(button.value, button.name))
+
+    if button == pypush2.buttons.Buttons.page_left:
+      ledState["ledPage"] = 0
+      setupLeds(sender, ledState["allLedsOn"], ledState["ledPage"])
+    elif button == pypush2.buttons.Buttons.page_right:
+      ledState["ledPage"] = 1
+      setupLeds(sender, ledState["allLedsOn"], ledState["ledPage"])
+    elif button == pypush2.buttons.Buttons.play:
+      ledState["allLedsOn"] = not ledState["allLedsOn"]
+      setupLeds(sender, ledState["allLedsOn"], ledState["ledPage"])
+
+  def unhandledMidiMessageReceived(sender, message):
     # Display handling
     if(message.type == 'note_on'):
       displayThread.setStringToDisplay(u"{}/{} (Note: {})".format(message.note - 36, message.note - 36 + 64, message.note))
     elif(message.type == 'control_change'):
       if pypush2.buttons.is_button(message.control):
-        button = pypush2.buttons.Buttons[message.control]
-        displayThread.setStringToDisplay(u"CC: {} ({})".format(message.control, button.name))
+        pass
       else:
         displayThread.setStringToDisplay(u"CC: {}".format(message.control))
       print "Control:", message.control
     else:
       print message
 
-    # Button event handling
-    if message.type == 'control_change' and message.control == pypush2.buttons.Buttons.page_left and message.value == 127:
-      ledState["ledPage"] = 0
-      setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
-    elif message.type == 'control_change' and message.control == pypush2.buttons.Buttons.page_right and message.value == 127:
-      ledState["ledPage"] = 1
-      setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
-    elif message.type == 'control_change' and message.control == pypush2.buttons.Buttons.play and message.value == 127:
-      ledState["allLedsOn"] = not ledState["allLedsOn"]
-      setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
-
   try:
-    with mido.open_output('Ableton Push 2 Live Port') as output, \
-         mido.open_input('Ableton Push 2 Live Port') as input:
-      setupLeds(output, ledState["allLedsOn"], ledState["ledPage"])
+    with pypush2.device.Device() as pushDevice:
+      pushDevice.on_button_press += buttonPressed
+      pushDevice.on_unhandled_midi_message += unhandledMidiMessageReceived
 
-      input.callback = setString
-      while True:
-        time.sleep(1)
+      setupLeds(pushDevice, ledState["allLedsOn"], ledState["ledPage"])
 
-    time.sleep(1)
-  except KeyboardInterrupt:
-    pass
+      pushDevice.listen()
   finally:
     displayThread.cancel()
     displayThread.join()

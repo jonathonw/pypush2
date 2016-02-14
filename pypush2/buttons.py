@@ -1,6 +1,9 @@
 import flufl.enum
 import sets
 
+BUTTON_PRESSED_VALUE = 127
+BUTTON_RELEASED_VALUE = 0
+
 class DisplayButtonGroups(flufl.enum.IntEnum):
   not_display_button = -1
   bottom = 0
