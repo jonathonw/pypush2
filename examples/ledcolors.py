@@ -135,7 +135,7 @@ def main():
         pass
       else:
         displayThread.setStringToDisplay(u"CC: {}".format(message.control))
-      print "Control:", message.control
+      print "Control:", message.control, ":", message
     else:
       print message
 
@@ -146,6 +146,7 @@ def main():
 
       setupLeds(pushDevice, ledState["allLedsOn"], ledState["ledPage"])
 
+      print "Listening to Push..."
       pushDevice.listen()
   finally:
     displayThread.cancel()

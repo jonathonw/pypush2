@@ -1,35 +1,34 @@
 import time
 
-import axel
 import mido
 
-import pypush2.buttons, pypush2.pads, pypush2.encoders
+import pypush2.buttons, pypush2.pads, pypush2.encoders, pypush2._utils.events
 
 
 class Device(object):
   def __init__(self):
-    self.on_button_press = axel.Event(self)
+    self.on_button_press = pypush2._utils.events.EventHandler(self)
     '''
     Event raised when a button is pressed.  Handlers should be of the form:
 
     handler(sender, button)
     '''
 
-    self.on_button_release = axel.Event(self)
+    self.on_button_release = pypush2._utils.events.EventHandler(self)
     '''
     Event raised when a button is released.  Handlers should be of the form:
 
     handler(sender, button)
     '''
 
-    self.on_pad_touch = axel.Event(self)
+    self.on_pad_touch = pypush2._utils.events.EventHandler(self)
     '''
     Event raised when a pad is touched.  Handlers should be of the form:
 
     handler(sender, padNote, velocity)
     '''
 
-    self.on_pad_release = axel.Event(self)
+    self.on_pad_release = pypush2._utils.events.EventHandler(self)
     '''
     Event raised when a pad is released.  Handlers should be of the form:
 
@@ -38,11 +37,11 @@ class Device(object):
 
     # Encoders not yet implemented--  need further work on the encoder
     # abstraction before they can make sense
-    #self.on_encoder_touch = axel.Event(self)
-    #self.on_encoder_release = axel.Event(self)
-    #self.on_encoder_change = axel.Event(self)
+    #self.on_encoder_touch = pypush2._utils.events.EventHandler(self)
+    #self.on_encoder_release = pypush2._utils.events.EventHandler(self)
+    #self.on_encoder_change = pypush2._utils.events.EventHandler(self)
 
-    self.on_unhandled_midi_message = axel.Event(self)
+    self.on_unhandled_midi_message = pypush2._utils.events.EventHandler(self)
     '''
     Event raised when a MIDI message is received but isn't handled by
     one of the other event types.  Handlers should be of the form:
@@ -84,7 +83,11 @@ class Device(object):
     # Clear out queued messages (Push sends a bunch of stuff on startup
     # that we don't care about, and will also queue up messages that
     # happen while nothing is running to receive them.)
-    for msg in self._midi_input.iter_pending():
+    #for msg in self._midi_input.iter_pending():
+    #  print msg
+    #  pass
+    time.sleep(0.1)
+    while self._midi_input.receive(block = False) != None:
       pass
 
     try:
