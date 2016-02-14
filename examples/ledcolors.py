@@ -114,7 +114,11 @@ def main():
     if(message.type == 'note_on'):
       displayThread.setStringToDisplay(u"{}/{} (Note: {})".format(message.note - 36, message.note - 36 + 64, message.note))
     elif(message.type == 'control_change'):
-      displayThread.setStringToDisplay(u"{}".format(message.control))
+      if(message.control in pypush2.buttons.Buttons):
+        button = pypush2.buttons.Buttons[message.control]
+        displayThread.setStringToDisplay(u"CC: {} ({})".format(message.control, button.name))
+      else:
+        displayThread.setStringToDisplay(u"CC: {}".format(message.control))
       print "Control:", message.control
     else:
       print message

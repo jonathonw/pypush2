@@ -6,10 +6,19 @@ class DisplayButtonGroups(flufl.enum.IntEnum):
   top = 1
 
 def is_display_button(button):
+  """
+  Returns true if the passedbutton is one of the buttons immediately
+  above or below the Push 2's display.
+  """
   return ((Buttons.top_display_0 <= button and button <= Buttons.top_display_7)
     or (Buttons.bottom_display_0 <= button and button <= Buttons.bottom_display_7))
 
 def get_display_button_group(button):
+  """
+  Returns whether the passed button is above or below the display.
+  Raises IndexError if the passed button is not a display button
+  (i.e. is_display_button(button) returns false).
+  """
   if Buttons.top_display_0 <= button and button <= Buttons.top_display_7:
     return DisplayButtonGroups.top
   elif Buttons.bottom_display_0 <= button and button <= Buttons.bottom_display_7:
@@ -18,6 +27,11 @@ def get_display_button_group(button):
     raise IndexError("Button {} is not a display button".format(button))
 
 def get_display_button_index(button):
+  """
+  Returns the index of the passed display button, with 0 referencing
+  the leftmost button.  Raises IndexError if the passed button is not
+  a display button (i.e. is_display_button(button) returns false).
+  """
   if get_display_button_group(button) == DisplayButtonGroups.bottom:
     return button - Buttons.bottom_display_0
   elif get_display_button_group(button) == DisplayButtonGroups.top:
@@ -27,7 +41,6 @@ def get_display_button_index(button):
 
 
 class Buttons(flufl.enum.IntEnum):
-
   # Left side
   tap_tempo = 3
   metronome = 9
