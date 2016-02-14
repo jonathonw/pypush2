@@ -80,7 +80,10 @@ def setupLeds(output, allLedsOn, colorGridPage):
   if allLedsOn:
     dimLevel = 3
     for i in range(0,128):
-      output.send(mido.Message('control_change', channel=0, control=i, value=dimLevel))
+      if i in pypush2.buttons.colored_buttons:
+        output.send(mido.Message('control_change', channel=0, control=i, value=94))
+      else:
+        output.send(mido.Message('control_change', channel=0, control=i, value=dimLevel))
     output.send(mido.Message('control_change', channel=0, control=pypush2.buttons.Buttons.play, value=127))
   else:
     dimLevel = 0

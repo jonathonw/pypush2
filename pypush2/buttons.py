@@ -134,6 +134,7 @@ class Buttons(flufl.enum.IntEnum):
 colored_buttons = sets.ImmutableSet([
   Buttons.mute,
   Buttons.solo,
+  Buttons.stop_clip,
   Buttons.automate,
   Buttons.record,
   Buttons.play,
