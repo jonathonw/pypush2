@@ -17,5 +17,11 @@ setup(
         'console_scripts': [
         ]
     },
+    setup_requires=[
+      'pytest-runner>=2.0,<3dev'
+    ],
+    tests_require=[
+      'pytest>=2.8.7'
+    ],
     ext_modules = cythonize("pypush2/rgbtools.pyx")
 )

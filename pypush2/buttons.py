@@ -1,6 +1,33 @@
-from flufl.enum import IntEnum
+import flufl.enum
 
-class Buttons(IntEnum):
+class DisplayButtonGroups(flufl.enum.IntEnum):
+  not_display_button = -1
+  bottom = 0
+  top = 1
+
+def is_display_button(button):
+  return ((Buttons.top_display_0 <= button and button <= Buttons.top_display_7)
+    or (Buttons.bottom_display_0 <= button and button <= Buttons.bottom_display_7))
+
+def get_display_button_group(button):
+  if Buttons.top_display_0 <= button and button <= Buttons.top_display_7:
+    return DisplayButtonGroups.top
+  elif Buttons.bottom_display_0 <= button and button <= Buttons.bottom_display_7:
+    return DisplayButtonGroups.bottom
+  else:
+    raise IndexError("Button {} is not a display button".format(button))
+
+def get_display_button_index(button):
+  if get_display_button_group(button) == DisplayButtonGroups.bottom:
+    return button - Buttons.bottom_display_0
+  elif get_display_button_group(button) == DisplayButtonGroups.top:
+    return button - Buttons.top_display_0
+  else:
+    raise IndexError("Button {} is not a display button".format(button))
+
+
+class Buttons(flufl.enum.IntEnum):
+
   # Left side
   tap_tempo = 3
   metronome = 9
