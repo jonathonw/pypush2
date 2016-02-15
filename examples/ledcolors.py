@@ -148,15 +148,19 @@ def main():
       setupLeds(sender, ledState["allLedsOn"], ledState["ledPage"])
 
   def padTouched(sender, padNote, velocity):
-    displayThread.setStringToDisplay(u"{}/{} (Note: {})".format(padNote - 36, padNote - 36 + 64, padNote))
+    
     if(ledState["ledPage"] == 0):
       colorCode = padNote - 36
     else:
       colorCode = padNote - 36 + 64
 
     if colorCode in pypush2.colors.PushColors:
-      displayThread.setColorToDisplay(pypush2.colors.PUSH_COLORS_DICT[pypush2.colors.PushColors[colorCode].name])
+      color = pypush2.colors.get_color_info_by_push_color_index(colorCode)
+
+      displayThread.setStringToDisplay(u"{}/{} (Note: {}) {}".format(padNote - 36, padNote - 36 + 64, padNote, pypush2.colors.PushColors[colorCode].name))
+      displayThread.setColorToDisplay(color)
     else:
+      displayThread.setStringToDisplay(u"{}/{} (Note: {})".format(padNote - 36, padNote - 36 + 64, padNote))
       displayThread.setColorToDisplay(pypush2.colors.PUSH_COLORS_DICT["black"])
 
   def unhandledMidiMessageReceived(sender, message):
