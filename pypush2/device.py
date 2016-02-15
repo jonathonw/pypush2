@@ -110,5 +110,13 @@ class Device(object):
         elif message.value == pypush2.buttons.BUTTON_RELEASED_VALUE:
           self.on_button_release(pypush2.buttons.Buttons[message.control])
           return
+    elif message.type == "note_on":
+      if pypush2.pads.is_pad(message.note):
+        self.on_pad_touch(message.note, message.velocity)
+        return
+    elif message.type == "note_off":
+      if pypush2.pads.is_pad(message.note):
+        self.on_pad_release(message.note, message.velocity)
+        return
 
     self.on_unhandled_midi_message(message)

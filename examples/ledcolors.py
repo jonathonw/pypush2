@@ -23,6 +23,7 @@ import mido
 import pypush2.device
 import pypush2.display
 import pypush2.buttons
+import pypush2.colors
 
 from math import pi
 
@@ -34,6 +35,8 @@ class DisplayThread(pypush2.display.DisplayRenderer):
     pypush2.display.DisplayRenderer.__init__(self, group=group, target=target, name=name, args=args, kwargs=kwargs)
     self.stringToDisplay = u"Touch a pad to see the color value it\u2019s showing"
     self.stringToDisplayLock = threading.Lock()
+    self.colorToDisplay = pypush2.colors.PUSH_COLORS_DICT["black"]
+    self.colorToDisplayLock = threading.Lock()
     self.animationFrameNumber = 0
     self.iteration = 0
 
@@ -46,17 +49,26 @@ class DisplayThread(pypush2.display.DisplayRenderer):
       val = self.stringToDisplay
     return val
 
+  def setColorToDisplay(self, newColor):
+    with self.colorToDisplayLock:
+      self.colorToDisplay = newColor
+
+  def getColorToDisplay(self):
+    with self.colorToDisplayLock:
+      val = self.colorToDisplay
+    return val
+
   def paint(self, context):
     with context:
-      context.set_source_rgb(0, 0, 0)
+      context.set_source_rgb(*self.getColorToDisplay().rgb_color)
       context.paint()
 
     with context:
-      context.set_source_rgb(0.1, 0.1, 0.1)
+      context.set_source_rgba(0.5, 0.5, 0.5, 0.5)
       context.arc(pypush2.display.DisplayParameters.DISPLAY_WIDTH - 20, pypush2.display.DisplayParameters.DISPLAY_HEIGHT - 20, 10, 0, 2 * pi)
       context.stroke()
       
-      context.set_source_rgb(1, 0.1, 0.1)
+      context.set_source_rgb(1, 1, 1)
       if self.iteration == 0:
         context.arc(pypush2.display.DisplayParameters.DISPLAY_WIDTH - 20, pypush2.display.DisplayParameters.DISPLAY_HEIGHT - 20, 10, 0, (float(self.animationFrameNumber) / 30) * 2 * pi)
       else:
@@ -66,12 +78,21 @@ class DisplayThread(pypush2.display.DisplayRenderer):
       if self.animationFrameNumber == 0:
         self.iteration = (self.iteration + 1) % 2
 
+    displayedString = self.getStringToDisplay()
     with context:
-      context.set_source_rgb(1, 1, 1)
+      context.set_source_rgba(0.0, 0.0, 0.0, 0.5)
+      context.move_to(22, 92)
+      context.select_font_face(family="Avenir")
+      context.set_font_size(32)
+      context.text_path(displayedString)
+      context.fill()
+
+    with context:
+      context.set_source_rgb(1.0, 1.0, 1.0)
       context.move_to(20, 90)
       context.select_font_face(family="Avenir")
       context.set_font_size(32)
-      context.text_path(self.getStringToDisplay())
+      context.text_path(displayedString)
       context.fill()
 
 def printMessage(message):
@@ -126,11 +147,21 @@ def main():
       ledState["allLedsOn"] = not ledState["allLedsOn"]
       setupLeds(sender, ledState["allLedsOn"], ledState["ledPage"])
 
+  def padTouched(sender, padNote, velocity):
+    displayThread.setStringToDisplay(u"{}/{} (Note: {})".format(padNote - 36, padNote - 36 + 64, padNote))
+    if(ledState["ledPage"] == 0):
+      colorCode = padNote - 36
+    else:
+      colorCode = padNote - 36 + 64
+
+    if colorCode in pypush2.colors.PushColors:
+      displayThread.setColorToDisplay(pypush2.colors.PUSH_COLORS_DICT[pypush2.colors.PushColors[colorCode].name])
+    else:
+      displayThread.setColorToDisplay(pypush2.colors.PUSH_COLORS_DICT["black"])
+
   def unhandledMidiMessageReceived(sender, message):
     # Display handling
-    if(message.type == 'note_on'):
-      displayThread.setStringToDisplay(u"{}/{} (Note: {})".format(message.note - 36, message.note - 36 + 64, message.note))
-    elif(message.type == 'control_change'):
+    if(message.type == 'control_change'):
       if pypush2.buttons.is_button(message.control):
         pass
       else:
@@ -142,6 +173,7 @@ def main():
   try:
     with pypush2.device.Device() as pushDevice:
       pushDevice.on_button_press += buttonPressed
+      pushDevice.on_pad_touch += padTouched
       pushDevice.on_unhandled_midi_message += unhandledMidiMessageReceived
 
       setupLeds(pushDevice, ledState["allLedsOn"], ledState["ledPage"])
