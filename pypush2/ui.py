@@ -94,6 +94,6 @@ class _DisplayThread(pypush2.display.DisplayRenderer):
 
       context.move_to(position[0] + 5, position[1] + 15)
       context.select_font_face(family="Avenir")
-      context.set_font_size(11)
+      context.set_font_size(13)
       context.text_path(text)
       context.fill()
