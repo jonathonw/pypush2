@@ -2,7 +2,7 @@ import pypush2.display, pypush2.colors, pypush2.device
 import cairocffi
 import mido
 
-color = pypush2.colors.PUSH_COLORS_DICT["pink"]
+color = pypush2.colors.PUSH_COLORS_DICT["lavender"]
 
 class PushUi(object):
   def __init__(self, ui_spec):
