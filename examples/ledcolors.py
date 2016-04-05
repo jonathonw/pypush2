@@ -98,6 +98,11 @@ class DisplayThread(pypush2.display.DisplayRenderer):
 def printMessage(message):
   print message
 
+def setDisplayButtonLeds(pushDevice, color):
+  for i in range(0, 8):
+    pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=(pypush2.buttons.Buttons.top_display_0 + i), value=color.push_color_index))
+    pushDevice.send_midi_message(mido.Message('control_change', channel=0, control=(pypush2.buttons.Buttons.bottom_display_0 + i), value=color.push_color_index))
+
 def setupLeds(pushDevice, allLedsOn, colorGridPage):
   if allLedsOn:
     dimLevel = 3
@@ -159,9 +164,11 @@ def main():
 
       displayThread.setStringToDisplay(u"{}/{} (Note: {}) {}".format(padNote - 36, padNote - 36 + 64, padNote, pypush2.colors.PushColors[colorCode].name))
       displayThread.setColorToDisplay(color)
+      setDisplayButtonLeds(sender, color)
     else:
       displayThread.setStringToDisplay(u"{}/{} (Note: {})".format(padNote - 36, padNote - 36 + 64, padNote))
       displayThread.setColorToDisplay(pypush2.colors.PUSH_COLORS_DICT["black"])
+      setDisplayButtonLeds(sender, color)
 
   def unhandledMidiMessageReceived(sender, message):
     # Display handling
