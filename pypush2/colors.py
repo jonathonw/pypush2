@@ -15,7 +15,8 @@ PUSH_COLORS_DICT = {
   "white": ColorInfo(120, (1.0, 1.0, 1.0)),
   "black": ColorInfo(0, (0.0, 0.0, 0.0)),
   "dark_grey": ColorInfo(124, (0.25, 0.25, 0.25)),
-  "grey": ColorInfo(123, (0.6, 0.6, 0.6))
+  "grey": ColorInfo(123, (0.6, 0.6, 0.6)),
+  "pink": ColorInfo(21, (1.0, 0.5, 0.5))
 }
 '''
 Dict of colors names to ColorInfo tuples describing that color.
