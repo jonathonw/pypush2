@@ -26,7 +26,10 @@ class DisplayRenderer(threading.Thread):
   inside paint that may be used from other threads.
   '''
 
-  _MAGIC_HEADER = array.array('B', [ 0xEF, 0xCD, 0xAB, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]);
+  _MAGIC_HEADER = array.array('B', [ 0xFF, 0xCC, 0xAA, 0x88, 
+                                     0x00, 0x00, 0x00, 0x00, 
+                                     0x00, 0x00, 0x00, 0x00, 
+                                     0x00, 0x00, 0x00, 0x00 ]);
 
   _PUSH_VID = 0x2982
   _PUSH_PID = 0x1967
@@ -64,11 +67,12 @@ class DisplayRenderer(threading.Thread):
 
       data = surface.get_data()
       convertedBgr = rgbtools.rgb565ToBgr565(data)
+      shapedBgr = rgbtools.shaping(convertedBgr)
 
       end = time.clock()
 
       dev.write(1, DisplayRenderer._MAGIC_HEADER)
-      dev.write(1, convertedBgr)
+      dev.write(1, shapedBgr)
 
       frameTime = end - start
 

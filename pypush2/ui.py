@@ -2,7 +2,7 @@ import pypush2.display, pypush2.colors, pypush2.device
 import cairocffi
 import mido
 
-color = pypush2.colors.PUSH_COLORS_DICT["lavender"]
+color = pypush2.colors.PUSH_COLORS_DICT["azure_radiance"]
 
 class PushUi(object):
   def __init__(self, ui_spec):
@@ -79,11 +79,11 @@ class _DisplayThread(pypush2.display.DisplayRenderer):
       self.drawLabel(context, labels[i], i % 2 == 0, (5 + 120*i, 3))
 
     for i in range(0, 8):
-      self.drawLabel(context, labels[i], i % 2 == 1, (5 + 120*i, pypush2.display.DisplayParameters.DISPLAY_HEIGHT-27))
+      self.drawLabel(context, labels[i], i % 2 == 1, (5 + 120*i, pypush2.display.DisplayParameters.DISPLAY_HEIGHT-23))
 
   def drawLabel(self, context, text, shouldFill, position):
     with context:
-      context.rectangle(*position, width=110, height=24)
+      context.rectangle(*position, width=110, height=20)
       context.clip()
       if shouldFill:
         context.set_source_rgb(*color.rgb_color)
@@ -92,8 +92,8 @@ class _DisplayThread(pypush2.display.DisplayRenderer):
       else:
         context.set_source_rgb(*color.rgb_color)
 
-      context.move_to(position[0] + 5, position[1] + 17)
+      context.move_to(position[0] + 5, position[1] + 15)
       context.select_font_face(family="Avenir")
-      context.set_font_size(14)
+      context.set_font_size(11)
       context.text_path(text)
       context.fill()

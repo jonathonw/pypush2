@@ -21,3 +21,16 @@ def rgb565ToBgr565(buffer):
     cArray[index] = newValue
 
   return originalArray
+
+def shaping(bgrArray):
+  cdef int SHAPING_PATTERN = 0xffe7f3e7
+  cdef int index
+  cdef array.array originalArray = array.array('I', bgrArray.tostring())
+  cdef unsigned int[:] cArray = originalArray
+
+  cdef int length = len(originalArray)
+
+  for index in range(length):
+    cArray[index] = cArray[index] ^ SHAPING_PATTERN
+
+  return originalArray
