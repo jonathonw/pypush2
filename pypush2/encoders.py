@@ -20,3 +20,10 @@ def note_is_encoder(note):
     (_DISPLAY_ENCODER_BASE_NOTE <= note and note < (_DISPLAY_ENCODER_BASE_NOTE + _DISPLAY_ENCODER_COUNT)) or
     note == _MASTER_ENCODER_NOTE
   )
+
+def note_is_display_encoder(note):
+  """
+  Returns true if the given note number corresponds to an encoder touched message for
+  one of the encoders above the display
+  """
+  return (_DISPLAY_ENCODER_BASE_NOTE <= note and note < (_DISPLAY_ENCODER_BASE_NOTE + _DISPLAY_ENCODER_COUNT))

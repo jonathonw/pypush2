@@ -5,6 +5,9 @@ import usb.util
 import array
 import cairocffi
 import rgbtools
+import cProfile
+
+_FRAMES_PER_SECOND = 60.0
 
 class DisplayParameters:
   DISPLAY_WIDTH = 960
@@ -76,7 +79,16 @@ class DisplayRenderer(threading.Thread):
 
       frameTime = end - start
 
-      if(frameTime < (1.0 / 60.0)):
-        time.sleep((1.0 / 60.0) - frameTime)
+      if(frameTime < (1.0 / _FRAMES_PER_SECOND)):
+        time.sleep((1.0 / _FRAMES_PER_SECOND) - frameTime)
       else:
-        time.sleep(1.0 / 60.0)
+        time.sleep(1.0 / _FRAMES_PER_SECOND)
+
+class ProfiledDisplayRenderer(DisplayRenderer):
+    # Overrides threading.Thread.run()
+    def run(self):
+        profiler = cProfile.Profile()
+        try:
+            return profiler.runcall(DisplayRenderer.run, self)
+        finally:
+            profiler.dump_stats('myprofile-%d.profile' % (self.ident,))

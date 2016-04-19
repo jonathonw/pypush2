@@ -37,8 +37,8 @@ class Device(object):
 
     # Encoders not yet implemented--  need further work on the encoder
     # abstraction before they can make sense
-    #self.on_encoder_touch = pypush2._utils.events.EventHandler(self)
-    #self.on_encoder_release = pypush2._utils.events.EventHandler(self)
+    self.on_encoder_touch = pypush2._utils.events.EventHandler(self)
+    self.on_encoder_release = pypush2._utils.events.EventHandler(self)
     #self.on_encoder_change = pypush2._utils.events.EventHandler(self)
 
     self.on_unhandled_midi_message = pypush2._utils.events.EventHandler(self)
@@ -114,6 +114,11 @@ class Device(object):
       if pypush2.pads.is_pad(message.note):
         self.on_pad_touch(message.note, message.velocity)
         return
+      elif pypush2.encoders.note_is_display_encoder(message.note):
+        if message.velocity == 127:
+          self.on_encoder_touch(message.note - pypush2.encoders._DISPLAY_ENCODER_BASE_NOTE)
+        elif message.velocity == 0:
+          self.on_encoder_release(message.note - pypush2.encoders._DISPLAY_ENCODER_BASE_NOTE)
     elif message.type == "note_off":
       if pypush2.pads.is_pad(message.note):
         self.on_pad_release(message.note, message.velocity)
