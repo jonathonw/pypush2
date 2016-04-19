@@ -43,10 +43,10 @@ class PushUi(object):
     pass
 
   def _on_encoder_touched(self, sender, encoderNumber):
-    self._displayThread.set_highlighted_gauge(encoderNumber)
+    self._displayThread.highlight_gauge(encoderNumber)
 
   def _on_encoder_released(self, sender, encoderNumber):
-    self._displayThread.set_highlighted_gauge(-1)
+    self._displayThread.unhighlight_gauge(encoderNumber)
 
 
 labels = ["Label", "ayayay", "Long label with really long name and stuff", "Hi There!", "Another label", "More labels!!!!!", "Moo", "Stuff"]
@@ -57,18 +57,22 @@ class _DisplayThread(pypush2.display.DisplayRenderer):
     pypush2.display.DisplayRenderer.__init__(self, group=group, target=target, name=name, args=args, kwargs=kwargs)
     self._uiSpec = ui_spec
     self._highlightedGaugeLock = threading.Lock()
-    self._highlightedGauge = -1
+    self._highlightedGauges = set()
 
   def _get_ui_spec(self):
     return self._uiSpec
 
-  def set_highlighted_gauge(self, highlighted_gauge):
+  def highlight_gauge(self, gauge):
     with self._highlightedGaugeLock:
-      self._highlightedGauge = highlighted_gauge
+      self._highlightedGauges.add(gauge)
 
-  def get_highlighted_gauge(self):
+  def unhighlight_gauge(self, gauge):
     with self._highlightedGaugeLock:
-      return self._highlightedGauge
+      self._highlightedGauges.discard(gauge)
+
+  def shouldHighlightGauge(self, gauge):
+    with self._highlightedGaugeLock:
+      return gauge in self._highlightedGauges
 
   def paint(self, context):
     with context:
@@ -106,7 +110,7 @@ class _DisplayThread(pypush2.display.DisplayRenderer):
       self.drawLabel(context, labels[i], i % 2 == 1, (5 + 120*i, pypush2.display.DisplayParameters.DISPLAY_HEIGHT-23))
 
     for i in range(0, 8):
-      self.drawGauge(context, labels[i], float(i) + 1.0, 0, 8, i == self.get_highlighted_gauge(), (5 + 120*i, 25))
+      self.drawGauge(context, labels[i], float(i) + 1.0, 0, 8, self.shouldHighlightGauge(i), (5 + 120*i, 25))
 
   def drawLabel(self, context, text, shouldFill, position):
     with context:
