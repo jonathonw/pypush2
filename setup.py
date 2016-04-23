@@ -10,7 +10,7 @@ setup(
       'mido>=1.1.14',
       'pyusb>=1.0.0b2',
       'cairocffi>=0.7.2',
-      'cython>=0.23.2',
+      'cython>=0.24',
       'flufl.enum>=4.1'
     ],
     entry_points = {

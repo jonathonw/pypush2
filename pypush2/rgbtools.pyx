@@ -6,19 +6,21 @@ import array
 def rgb565ToBgr565(buffer):
   cdef int index
   cdef unsigned short value, redComponent, blueComponent, newValue
-  cdef array.array originalArray = array.array('H', str(buffer))
-  cdef unsigned short[:] cArray = originalArray
+  cdef array.array originalArray = array.array('H', buffer[:])
+
+  # Cython note: memoryviews into array.array appear to leak like crazy :(
+  # cdef unsigned short[:] cArray = originalArray
 
   cdef int length = len(originalArray)
 
   for index in range(length):
-    redComponent = (cArray[index] >> 11) & 0b00011111
-    greenComponent = (cArray[index]) & 0b0011111100000
-    blueComponent = cArray[index] & 0b00011111
+    redComponent = (originalArray.data.as_ushorts[index] >> 11) & 0b00011111
+    greenComponent = (originalArray.data.as_ushorts[index]) & 0b0011111100000
+    blueComponent = originalArray.data.as_ushorts[index] & 0b00011111
 
     newValue = (blueComponent << 11) | greenComponent | redComponent
 
-    cArray[index] = newValue
+    originalArray.data.as_ushorts[index] = newValue
 
   return originalArray
 
@@ -26,11 +28,11 @@ def shaping(bgrArray):
   cdef int SHAPING_PATTERN = 0xffe7f3e7
   cdef int index
   cdef array.array originalArray = array.array('I', bgrArray.tostring())
-  cdef unsigned int[:] cArray = originalArray
+  # cdef unsigned int[:] cArray = originalArray
 
   cdef int length = len(originalArray)
 
   for index in range(length):
-    cArray[index] = cArray[index] ^ SHAPING_PATTERN
+    originalArray.data.as_uints[index] = originalArray.data.as_uints[index] ^ SHAPING_PATTERN
 
   return originalArray

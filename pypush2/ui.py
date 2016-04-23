@@ -1,4 +1,4 @@
-import pypush2.display, pypush2.colors, pypush2.device
+import pypush2.display, pypush2.colors, pypush2.device, pypush2._utils.events
 import cairocffi
 import mido
 import threading
@@ -47,6 +47,48 @@ class PushUi(object):
 
   def _on_encoder_released(self, sender, encoderNumber):
     self._displayThread.unhighlight_gauge(encoderNumber)
+
+
+class Tab(object):
+  def __init__(self, title, active_color=color, inactive_color=dark_color, highlight_color=highlight_color):
+    self.title = title
+    self.active_color = active_color
+    self.inactive_color = inactive_color
+    self.highlight_color = highlight_color
+
+    self.tab_selected = pypush2._utils.events.EventHandler(self)
+    self.tab_deselected = pypush2._utils.events.EventHandler(self)
+
+    self._actions = []
+    self._dials = []
+
+  def add_action(self, new_action):
+    self._actions.append(new_action)
+
+  def add_dial(self, new_dial):
+    self._dials.append(new_dial)
+
+class Action(object):
+  def __init__(self, title, color=None):
+    self.title = title
+    self.color = color
+
+    self.on_action = pypush2._utils.events.EventHandler(self)
+
+class Dial(object):
+  def __init__(self, title, intial_value, min_value, max_value, active_color=None, inactive_color=None, highlight_color=None):
+    self.title = title
+    self.value = initial_value
+    self.min_value = min_value
+    self.max_value = max_value
+
+    self.active_color = active_color
+    self.inactive_color = inactive_color
+    self.highlight_color = highlight_color
+
+    self.on_change = pypush2._utils.events.EventHandler(self)
+
+    self.value_format = None
 
 
 labels = ["Label", "ayayay", "Long label with really long name and stuff", "Hi There!", "Another label", "More labels!!!!!", "Moo", "Stuff"]
