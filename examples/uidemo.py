@@ -36,7 +36,7 @@ def main():
   tab3 = pypush2.ui.Tab("Third Tab", colors.PUSH_COLORS_DICT["hollywood_cerise"], colors.PUSH_COLORS_DICT["purple"], colors.PUSH_COLORS_DICT["lavender_magenta"])
   
   dial31 = pypush2.ui.Dial("Some Dial", 5.9, 0, 10)
-  tab1.add_dial(dial31)
+  tab3.add_dial(dial31)
 
   dial32 = pypush2.ui.Dial("Yet Another Dial", 2.1, 0, 10)
   tab3.add_dial(dial32)
