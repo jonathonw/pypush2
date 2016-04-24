@@ -39,7 +39,7 @@ class Device(object):
     # abstraction before they can make sense
     self.on_encoder_touch = pypush2._utils.events.EventHandler(self)
     self.on_encoder_release = pypush2._utils.events.EventHandler(self)
-    #self.on_encoder_change = pypush2._utils.events.EventHandler(self)
+    self.on_encoder_change = pypush2._utils.events.EventHandler(self)
 
     self.on_unhandled_midi_message = pypush2._utils.events.EventHandler(self)
     '''
@@ -110,6 +110,10 @@ class Device(object):
         elif message.value == pypush2.buttons.BUTTON_RELEASED_VALUE:
           self.on_button_release(pypush2.buttons.Buttons[message.control])
           return
+      elif pypush2.encoders.cc_is_display_encoder(message.control):
+        encoderNumber = pypush2.encoders.get_encoder_number_from_cc(message.control)
+        action = pypush2.encoders.convert_encoder_cc_value(message.value)
+        self.on_encoder_change(encoderNumber, action)
     elif message.type == "note_on":
       if pypush2.pads.is_pad(message.note):
         self.on_pad_touch(message.note, message.velocity)

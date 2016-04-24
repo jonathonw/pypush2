@@ -22,9 +22,10 @@ class PushUi(object):
       with pypush2.device.Device() as pushDevice:
         self._setup_button_leds(pushDevice)
 
-        pushDevice.on_button_press += self._on_button_pressed
+        pushDevice.on_button_release += self._on_button_pressed
         pushDevice.on_encoder_touch += self._on_encoder_touched
         pushDevice.on_encoder_release += self._on_encoder_released
+        pushDevice.on_encoder_change += self._on_encoder_changed
 
         self._displayThread.update_display_button_colors(pushDevice)
 
@@ -64,6 +65,16 @@ class PushUi(object):
           pass
 
       self._displayThread.run_operation_in_ui_thread(fn)
+
+  def _on_encoder_changed(self, sender, encoder, action):
+    def fn():
+      if len(self._displayThread._tabs) > 0:
+        tab = self._displayThread._tabs[self._displayThread._current_tab]
+        if encoder < len(tab._dials):
+          dial = tab._dials[encoder]
+          dial.on_change(action)
+
+    self._displayThread.run_operation_in_ui_thread(fn)
       
 
 
